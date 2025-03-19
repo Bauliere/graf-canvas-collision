@@ -5,9 +5,25 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f0f0;
+    background-image: url('img/fondo.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
 }
 
 canvas {
-    background-color: rgb(129, 8, 8);
+    background-color: transparent;
+}
+
+#counter {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
 }
