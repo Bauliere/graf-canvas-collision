@@ -7,20 +7,17 @@ canvas.height = window.innerHeight;
 let destroyedCount = 0;
 const counterElement = document.getElementById('counter');
 let circles = [];
-let lastSpawn = Date.now();
+const maxCircles = 10; // Número máximo de círculos en pantalla
 
-// Cargar imágenes
+// Cargar imagen
 const efrainImage = new Image();
-efrainImage.src = "img/efrain.jpg";
-const fondoImage = new Image();
-fondoImage.src = "img/fondo.jpg";
+efrainImage.src = "img/efrain.jpg"; // Asegúrate de tener esta ruta correcta
 
 class Circle {
-    constructor(x, y, radius, speedX, speedY, isSpecial = false) {
+    constructor(x, y, radius, speedY, isSpecial = false) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.speedX = speedX;
         this.speedY = speedY;
         this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
         this.isSpecial = isSpecial;
@@ -28,6 +25,7 @@ class Circle {
 
     draw() {
         if (this.isSpecial) {
+            // Dibujar imagen con clip circular
             ctx.save();
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -42,6 +40,7 @@ class Circle {
             );
             ctx.restore();
         } else {
+            // Dibujar círculo normal
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = this.color;
@@ -50,60 +49,36 @@ class Circle {
     }
 
     update() {
-        this.y += this.speedY;
-        
+        this.y += this.speedY; // Solo movimiento vertical
+
         // Reiniciar posición al llegar al fondo
         if (this.y - this.radius > canvas.height) {
             this.y = -this.radius;
             this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
-            this.speedX = (Math.random() - 0.5) * 2;
+            this.speedY = Math.random() * 2 + 1; // Nueva velocidad aleatoria
         }
-        
         this.draw();
     }
 }
 
-// Generar nuevos círculos continuamente
-function spawnCircles() {
-    const now = Date.now();
-    if (now - lastSpawn > 1500) { // Generar cada 1.5 segundos
-        lastSpawn = now;
-        
-        const radius = Math.floor(Math.random() * 31) + 20;
-        const x = Math.random() * (canvas.width - radius * 2) + radius;
-        const y = -radius;
-        const speedY = Math.random() * 2 + 1;
-        
-        // 30% de probabilidad de ser especial
-        const isSpecial = Math.random() < 0.3;
-        
-        circles.push(new Circle(
-            x,
-            y,
-            radius,
-            (Math.random() - 0.5) * 2,
-            speedY,
-            isSpecial
-        ));
-    }
+// Crear un nuevo círculo
+function createCircle() {
+    const radius = Math.floor(Math.random() * 31) + 20; // 20-50px
+    const x = Math.random() * (canvas.width - radius * 2) + radius;
+    const y = -radius; // Iniciar arriba del canvas
+    const speedY = Math.random() * 2 + 1; // Velocidad vertical: 1-3
+
+    // Aumentar ligeramente la probabilidad de que sea especial (10% de probabilidad)
+    const isSpecial = Math.random() < 0.1;
+
+    circles.push(new Circle(x, y, radius, speedY, isSpecial));
 }
 
+// Iniciar después de cargar la imagen
 efrainImage.onload = () => {
     // Crear círculos iniciales
-    for (let i = 0; i < 8; i++) {
-        const radius = Math.floor(Math.random() * 31) + 20;
-        const x = Math.random() * (canvas.width - radius * 2) + radius;
-        const y = -radius;
-        const speedY = Math.random() * 2 + 1;
-        
-        circles.push(new Circle(
-            x,
-            y,
-            radius,
-            (Math.random() - 0.5) * 2,
-            speedY,
-            i === 0 // Primer círculo siempre especial
-        ));
+    for (let i = 0; i < maxCircles; i++) {
+        createCircle();
     }
     animate();
 };
@@ -124,6 +99,7 @@ canvas.addEventListener("click", (e) => {
             circles.splice(i, 1);
             destroyedCount++;
             counterElement.textContent = `Círculos eliminados: ${destroyedCount}`;
+            createCircle(); // Crear un nuevo círculo al eliminar uno
         }
     }
 });
@@ -131,7 +107,13 @@ canvas.addEventListener("click", (e) => {
 // Animación
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    spawnCircles();
+
+    // Asegurar que siempre haya 10 círculos
+    while (circles.length < maxCircles) {
+        createCircle();
+    }
+
+    // Actualizar y dibujar círculos
     circles.forEach(circle => circle.update());
     requestAnimationFrame(animate);
 }
